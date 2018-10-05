@@ -1,0 +1,35 @@
+﻿1. After running a few tests in the dialogue session, I discovered that when given a gramatically incorrect statement the program behaves in a weird way. 
+For example, I wrote:
+“Cats like Mary.”
+Since the system only recognizes sentences of type S -> P Ts P, it treated cats as a proper name Cats rather than a noun. This makes the sentence 
+grammatically incorrect (It should be “Cats likes Mary.”). When I wrote: “Who likes Mary?”, the program performed as expected and returned “No one”. 
+However, when due to a typing mistake I wrote “Who liked Mary?”, it returned “Cats”. After that I discovered that for any question of the type: 
+“Who [ungrammatical word] Mary?”, it also returns “Cats”. This might be confusing to the user.
+Although the system runs correctly when given grammatically correct statements, it would be a better idea to be able to recognize grammatically incorrect
+statements because typing mistakes are very common.
+
+After looking through the code for the function process_statement (in statements.py), I noticed that the program only gives an error if the given 
+sentence doesn’t start with a proper name. A better way, in my opinion, would be to extend the agreement.py file to also accept statements and not only 
+questions. It would use the grammar for statements given as a comment in the process_statement function:
+
+S  -> P is AR Ns | P is A | P Is | P Ts P
+AR -> a | an
+
+In that way we would only need to add a few new rules to the check_node function in agreement.py.
+We would also need to make a few changes in the semantics.py file so that when given a new statement the system parses it and only accepts it if it has 
+exactly one valid parse tree (so that it’s not ambiguous).
+
+2. A further improvement might be to extend the grammar for the statements a little bit.
+In my opinion it would be difficult to implement a system that distinguishes between sentences that start with a proper name and sentences that start 
+with a noun because both of them would have a capital first letter in the beginning of the sentence.
+However, I think it would not be too difficult to add rules such as S -> P Ts Np (e.g. “Mary likes cats.”). For sentences containing a transitive verb, 
+the system would only need to check whether the first letter of the second noun is capital and tag with “P” or “N” accordingly.
+
+3. Another improvement might be to extend the grammar in agreement.py so that it accepts uncountable nouns.
+For example, currently the system finds no valid parses for the sentence “Who drinks water?”, however, it parses “Who drinks a water?” and “Who drinks 
+waters?” which are both ungrammatical. A possible solution might be to extend the rule NP[s] -> P | AR Nom[s] to NP[s] -> P | AR Nom[s] | Nom[s].
+ 
+4. Another improvement might be to add a rule that checks whether AR and Nom agree so that the system throws an error for phrases such as “a orange” or 
+“an duck”. The rule might be of the form:
+Nom[s] -> AR[x] Nom[s, x],
+where x is an attribute variable with two possible values – a (if the noun starts with a consonant) and an (if the nouns starts with a vowel). 
